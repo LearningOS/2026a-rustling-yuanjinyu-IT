@@ -3,11 +3,18 @@
 // Execute `rustlings hint enums2` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
+// 这种写法，叫做枚举成员的关联类型
+// 比如这个 Move 成员关联类型就是结构体
 #[derive(Debug)]
 enum Message {
-    // TODO: define the different variants used below
+    Move{
+        x:i32,
+        y:i32,
+    },
+    Echo(String),
+    ChangeColor(i32,i32,i32),
+    Quit,
 }
 
 impl Message {
