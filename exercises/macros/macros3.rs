@@ -5,7 +5,6 @@
 // Execute `rustlings hint macros3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
 
 
 #[macro_use]

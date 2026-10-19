@@ -31,7 +31,6 @@ enum ParsePersonError {
     ParseInt(ParseIntError),
 }
 
-// I AM NOT DONE
 
 // Steps:
 // 1. If the length of the provided string is 0, an error should be returned
@@ -51,7 +50,34 @@ enum ParsePersonError {
 
 impl FromStr for Person {
     type Err = ParsePersonError;
+
     fn from_str(s: &str) -> Result<Person, Self::Err> {
+        if s.is_empty() {
+            return Err(ParsePersonError::Empty);
+        }
+
+        // 对啊，将其转换为 Vec<&str> 这样的，就可以了
+        // Split 对象应该也算是个迭代器适配器的！实现了 Iterator 这个 trait 的！以及 Iterator 这个 trait 
+        let parts: Vec<&str> = s.split(',').collect();
+        if parts.len() != 2 {
+            return Err(ParsePersonError::BadLen);
+        }
+
+        let name = parts[0];
+        let age_str = parts[1];
+
+        if name.is_empty() {
+            return Err(ParsePersonError::NoName);
+        }
+
+        let age = age_str
+            .parse::<usize>()
+            .map_err(ParsePersonError::ParseInt)?;
+
+        Ok(Person {
+            name: name.to_string(),
+            age,
+        })
     }
 }
 
