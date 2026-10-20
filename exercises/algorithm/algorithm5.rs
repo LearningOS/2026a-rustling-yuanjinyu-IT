@@ -1,18 +1,23 @@
+#![allow(unused)] 
+
 /*
 	bfs
 	This problem requires you to implement a basic BFS algorithm
 */
 
-//I AM NOT DONE
+
+
 use std::collections::VecDeque;
 
 // Define a graph
 struct Graph {
-    adj: Vec<Vec<usize>>, 
+    adj: Vec<Vec<usize>>, // 这就是一个邻接表的实现方式
 }
 
 impl Graph {
+
     // Create a new graph with n vertices
+    // 建立一个邻接表
     fn new(n: usize) -> Self {
         Graph {
             adj: vec![vec![]; n],
@@ -25,12 +30,28 @@ impl Graph {
         self.adj[dest].push(src); 
     }
 
+
     // Perform a breadth-first search on the graph, return the order of visited nodes
     fn bfs_with_return(&self, start: usize) -> Vec<usize> {
+        // BFS 从设定的初始节点入队，只要队列不空，就一直找邻接的顶点
         
-		//TODO
-
+        let mut q=VecDeque::new();
         let mut visit_order = vec![];
+        q.push_back(start); // 入队（后进）
+        // 队不空
+        while !q.is_empty(){
+            // 将队列当中的元素出队（前出）
+            if let Some(u) = q.pop_front(){
+                visit_order.push(u); // 代表访问过了
+                // 找和 u 临接的顶点
+                for ele in self.adj[u].iter(){
+                    // 已经访问过的顶点当中没有，且队列当中没有（我觉得这里能优化的起始）
+                    if !visit_order.contains(ele) && !q.contains(ele){
+                        q.push_back(*ele); 
+                    }
+                }
+            }
+        }
         visit_order
     }
 }
@@ -85,3 +106,5 @@ mod tests {
     }
 }
 
+
+fn main(){}

@@ -2,18 +2,21 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
 use std::vec::*;
 
+
+// 定义链表当中的节点
 #[derive(Debug)]
 struct Node<T> {
     val: T,
-    next: Option<NonNull<Node<T>>>,
+    next: Option<NonNull<Node<T>>>, // 使用 NonNull<T> 的方式，来替代裸指针！确保不会发生空引用的现象！又因为 Rust 的空指针优化，因此使用 Option 之后，不会引入额外开销
 }
 
+// 一个新的 Node 节点
 impl<T> Node<T> {
     fn new(t: T) -> Node<T> {
         Node {
@@ -22,20 +25,30 @@ impl<T> Node<T> {
         }
     }
 }
+
+
+// 链表结构体
 #[derive(Debug)]
 struct LinkedList<T> {
     length: u32,
-    start: Option<NonNull<Node<T>>>,
-    end: Option<NonNull<Node<T>>>,
+    start: Option<NonNull<Node<T>>>, // 起始位置，可以理解为头指针
+    end: Option<NonNull<Node<T>>>, // 末尾位置，可以理解为尾指针
 }
 
-impl<T> Default for LinkedList<T> {
+
+// 默认实现
+impl<T> Default for LinkedList<T> 
+    where T:PartialOrd+Ord+Clone
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+
+impl<T> LinkedList<T> 
+    where T:PartialOrd+Ord+Clone
+{
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -47,20 +60,21 @@ impl<T> LinkedList<T> {
     pub fn add(&mut self, obj: T) {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
-        let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
+        let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) }); // 使用 Box 安全创建裸指针
         match self.end {
             None => self.start = node_ptr,
-            Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
+            Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr }, // 对于 NonNull 的操作为 unsafe 的操作
         }
         self.end = node_ptr;
         self.length += 1;
     }
 
-    pub fn get(&mut self, index: i32) -> Option<&T> {
+    pub fn get(&self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
 
-    fn get_ith_node(&mut self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
+    // 递归写法，一个一个往后找
+    fn get_ith_node(&self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
         match node {
             None => None,
             Some(next_ptr) => match index {
@@ -69,14 +83,64 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+
+    // 合并两个有序的单链表
+    // 两个指针，分别遍历链表当中的元素，将小的那一个加入到新的链表当中
+	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self // 加上 trait 限制，否则无法比较数据大小
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut ans=LinkedList::new();
+        let a_len = list_a.length as i32;
+        let b_len = list_b.length as i32; 
+        
+        // 两个指针，分别指向两个链表当中的节点
+        let mut i:i32=0;
+        let mut j:i32=0;
+
+        // 当两个链表都没有遍历完的时候
+        while i<a_len && j<b_len{ // Rust 当中类型必须强匹配
+            
+            let a = match list_a.get(i){
+                Some(num)=>num,
+                None=>break,
+            };
+
+            let b =match list_b.get(j){
+                Some(num)=>num,
+                None=>break,
+            };
+
+            if a<=b{
+                ans.add(a.clone());
+                i+=1;
+            }else{
+                ans.add(b.clone());
+                j+=1;
+            }
+
         }
+
+        // 处理完了之后，收尾
+
+        while i < a_len{
+            let a =match list_a.get(i){
+                Some(num)=>num,
+                None=>break,
+            };
+            ans.add(a.clone());
+            i+=1;
+        }
+
+        while j < b_len{
+            let b =match list_b.get(j){
+                Some(num)=>num,
+                None=>break,
+            };
+            ans.add(b.clone());
+            j+=1;
+        }
+
+        ans
+
 	}
 }
 

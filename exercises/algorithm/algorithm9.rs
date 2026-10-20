@@ -2,7 +2,8 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +38,26 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // 新元素放置在末尾，然后自底向上调整堆结构
+
+        // 1. 新元素先放在数组末尾
+        self.items.push(value);
+        self.count+=1;
+
+        // 2. 从新元素的位置开始，向上调整
+        let mut idx = self.count;
+        while idx > 1{
+            let parent = self.parent_idx(idx);
+
+            // 当前节点优先级没有父节点高，就不管
+            if !((self.comparator)(&self.items[idx],&self.items[parent])){
+                break;
+            }
+
+            // 否则的话，交换当前子节点和父节点
+            self.items.swap(idx,parent);
+            idx=parent;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +77,14 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left = self.left_child_idx(idx);
+        let right = self.right_child_idx(idx);
+
+        if right<=self.count && ((self.comparator)(&self.items[right],&self.items[left])) {
+            right
+        }else{
+            left
+        }
     }
 }
 
@@ -84,8 +110,39 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.count==0{
+            return None;
+        }
+
+        // 先移除数组末尾的元素
+        let last = self.items.pop().unwrap();
+        self.count-=1;
+
+        if self.count==0{
+            return Some(last);
+        }
+
+        // 保存原来的堆顶，用最后一个元素填补根节点
+        let root = std::mem::replace(&mut self.items[1], last);
+
+        // 从根节点开始，向下调整堆结构
+        let mut idx = 1;
+        while self.children_present(idx) {
+            // 找到应当交换的子节点
+            let child = self.smallest_child_idx(idx);
+            
+            // 如果已经满足堆结构，直接结束
+            if !((self.comparator)(&self.items[child],&self.items[idx])){
+                break;
+            }
+
+            // 否则交换，并且继续向下调整
+            self.items.swap(idx, child);
+            idx=child;
+        }
+
+        Some(root)
+
     }
 }
 

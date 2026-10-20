@@ -2,10 +2,11 @@
 	double linked list reverse
 	This problem requires you to reverse a doubly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
+use std::thread::current;
 use std::vec::*;
 
 #[derive(Debug)]
@@ -59,11 +60,11 @@ impl<T> LinkedList<T> {
         self.length += 1;
     }
 
-    pub fn get(&mut self, index: i32) -> Option<&T> {
+    pub fn get(&self, index: i32) -> Option<&T> {
         self.get_ith_node(self.start, index)
     }
 
-    fn get_ith_node(&mut self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
+    fn get_ith_node(&self, node: Option<NonNull<Node<T>>>, index: i32) -> Option<&T> {
         match node {
             None => None,
             Some(next_ptr) => match index {
@@ -72,8 +73,35 @@ impl<T> LinkedList<T> {
             },
         }
     }
+
+
+    // 原地反转就行了，空间复杂度为 O(1) 的，上面的三个方法都不需要使用
 	pub fn reverse(&mut self){
-		// TODO
+        // 长度为 0 或 1 ，直接结束
+        if self.length==0 || self.length==1{
+            return ;
+        }
+
+        // 从头开始
+        let mut cur=self.start;
+        
+        while let Some( node_ptr)=cur.as_mut(){ // 这里得到的是 &mut NonNull<Node<T>>
+            unsafe{
+                let node = node_ptr.as_mut(); // 这里是 NonNull 的 as_mut() 方法，操作 NonNull 这个指针包裹数据的可变引用！ 所以是 &mut Node<T>
+                // 保存原来的 next 
+                let next = node.next;
+
+                // 交换节点的 next 和 prev 
+                std::mem::swap(&mut node.prev, &mut node.next);
+                
+                // 遍历原来的下一个节点
+                cur=next;
+            }
+        }
+
+        // 交换头指针和尾指针
+        std::mem::swap(&mut self.start, &mut self.end);
+
 	}
 }
 
